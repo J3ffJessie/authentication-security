@@ -5,11 +5,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
-
+const md5 = require("md5");
 
 
 const app = express();
+
 
 
 app.use(express.static("public"));
@@ -32,7 +32,6 @@ const userSchema = new mongoose.Schema({
 // //basic level encryption with basic encryption using provided secret key
 
 
-userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ["password"]});
 
 //creating the model for our usage to gather the data for the DB
 const User = new mongoose.model("User", userSchema);
@@ -54,7 +53,7 @@ app.post("/register", function(req, res){
 //creates a new user in the DB by the register form  
   const newUser = new User({
     email: req.body.username,
-    password: req.body.password
+    password: md5(req.body.password)
   });
 //saves the new user information in the DB for future reference. If successfully saved, they have access to the secrets page, if not the error is logged as to why not
   newUser.save(function(err){
@@ -69,7 +68,7 @@ app.post("/register", function(req, res){
 
 app.post("/login", function(req, res){
   const username = req.body.username;
-  const password = req.body.password;
+  const password = md5(req.body.password);
 
 
   User.findOne({email: username}, function(err, foundUser){
